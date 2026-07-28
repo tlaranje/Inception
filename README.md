@@ -1,1 +1,1 @@
-https://dev.to/alejiri/docker-nginx-wordpress-mariadb-tutorial-inception42-1eok
+https://medium.com/@ssterdev/inception-42-project-part-ii-19a06962cf3b

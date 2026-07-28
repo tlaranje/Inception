@@ -1,0 +1,61 @@
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+
+volumes:
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/tlaranje/data/wordpress
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/tlaranje/data/mariadb
+
+services:
+  nginx:
+    build: requirements/nginx/.
+    container_name: nginx
+    restart: always
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+
+  wordpress:
+    build: requirements/wordpress/.
+    container_name: wordpress
+    restart: always
+    env_file:
+      - ./.env
+    secrets:
+      - db_password
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+
+  mariadb:
+    build: requirements/mariadb/.
+    container_name: mariadb
+    restart: always
+    env_file:
+      - ./.env
+    secrets:
+      - db_password
+      - db_root_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
+
+networks:
+  inception:
