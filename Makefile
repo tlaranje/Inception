@@ -1,26 +1,19 @@
-# ============================================================
-#  Inception - Makefile
-# ============================================================
+NAME = inception
+LOGIN = tlaranje
+DATA_DIR = /home/$(LOGIN)/data
+COMPOSE = docker compose -f srcs/docker-compose.yml
 
-DATA_DIR		= /home/$(USER)/data
+all: prepare up
 
-COMPOSE_FILE	= srcs/docker-compose.yml
-COMPOSE			= docker compose -f $(COMPOSE_FILE)
-
-#  Main rules
-
-all: up
-
-build:
-	@mkdir -p $(DATA_DIR)/wordpress
-	@mkdir -p $(DATA_DIR)/mariadb
-	$(COMPOSE) build
-
-up: build
-	$(COMPOSE) up -d
+up:
+	$(COMPOSE) up --build -d
 
 down:
 	$(COMPOSE) down
+
+prepare:
+	mkdir -p $(DATA_DIR)/wordpress
+	mkdir -p $(DATA_DIR)/mariadb
 
 start:
 	$(COMPOSE) start
@@ -30,25 +23,19 @@ stop:
 
 restart: down up
 
-#  Cleaning rules
-
-clean: down
-	docker system prune -af
-
-fclean: clean
-	@sudo rm -rf $(DATA_DIR)/wordpress/*
-	@sudo rm -rf $(DATA_DIR)/mariadb/*
-	docker volume prune -af
-	docker network prune -f
-
-re: fclean all
-
-#  Debug / utility rules
-
-ps:
-	$(COMPOSE) ps
-
 logs:
 	$(COMPOSE) logs -f
 
-.PHONY: all build up down start stop restart clean fclean re ps logs
+status:
+	$(COMPOSE) ps
+
+clean: down
+	docker system prune -f
+
+fclean: clean
+	sudo rm -rf $(DATA_DIR)
+	docker volume rm $$(docker volume ls -q | grep $(NAME)) 2>/dev/null || true
+
+re: fclean all
+
+.PHONY: all up down prepare start stop restart logs status clean fclean re

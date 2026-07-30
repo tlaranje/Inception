@@ -1,8 +1,56 @@
-secrets:
-  db_password:
-    file: ../secrets/db_password.txt
-  db_root_password:
-    file: ../secrets/db_root_password.txt
+services:
+  nginx:
+    build: ./requirements/nginx
+    image: nginx
+    container_name: nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - wordpress
+    restart: on-failure
+    env_file:
+      - .env
+
+  wordpress:
+    build: ./requirements/wordpress
+    image: wordpress
+    container_name: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - inception
+    depends_on:
+      - mariadb
+    restart: on-failure
+    env_file:
+      - .env
+    secrets:
+      - db_password
+      - db_root_password
+      - credentials
+
+  mariadb:
+    build: ./requirements/mariadb
+    image: mariadb
+    container_name: mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
+    restart: on-failure
+    env_file:
+      - .env
+    secrets:
+      - db_password
+      - db_root_password
+
+networks:
+  inception:
+    driver: bridge
 
 volumes:
   wordpress_data:
@@ -18,44 +66,10 @@ volumes:
       o: bind
       device: /home/tlaranje/data/mariadb
 
-services:
-  nginx:
-    build: requirements/nginx/.
-    container_name: nginx
-    restart: always
-    ports:
-      - "443:443"
-    volumes:
-      - wordpress_data:/var/www/html
-    networks:
-      - inception
-
-  wordpress:
-    build: requirements/wordpress/.
-    container_name: wordpress
-    restart: always
-    env_file:
-      - ./.env
-    secrets:
-      - db_password
-    volumes:
-      - wordpress_data:/var/www/html
-    networks:
-      - inception
-
-  mariadb:
-    build: requirements/mariadb/.
-    container_name: mariadb
-    restart: always
-    env_file:
-      - ./.env
-    secrets:
-      - db_password
-      - db_root_password
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    networks:
-      - inception
-
-networks:
-  inception:
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  credentials:
+    file: ../secrets/credentials.txt

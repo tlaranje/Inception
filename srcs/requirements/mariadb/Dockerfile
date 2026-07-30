@@ -1,10 +1,17 @@
-FROM debian:bookworm
+FROM debian:bookworm-slim
 
-RUN apt update && apt upgrade && apt install -y mariadb-server
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    mariadb-server \
+    mariadb-client \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY 50-server.cnf /etc/mysql/mariadb.conf.d/.
-COPY script.sh .
+COPY conf/50-server.cnf /etc/mysql/mariadb.conf.d/50-server.cnf
+COPY tools/init_db.sh /usr/local/bin/init_db.sh
+RUN chmod +x /usr/local/bin/init_db.sh
 
-RUN mkdir /run/mysqld && chmod +x script.sh
+RUN mkdir -p /var/lib/mysql /run/mysqld \
+    && chown -R mysql:mysql /var/lib/mysql /run/mysqld
 
-CMD ["./script.sh"]
+EXPOSE 3306
+
+ENTRYPOINT ["/usr/local/bin/init_db.sh"]

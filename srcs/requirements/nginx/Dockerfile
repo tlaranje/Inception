@@ -1,11 +1,14 @@
-FROM debian:bookworm
+FROM debian:bookworm-slim
 
-RUN apt update && apt upgrade && apt install -y nginx
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    nginx \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN rm -f /etc/nginx/sites-enabled/default
+COPY conf/nginx.conf /etc/nginx/nginx.conf
+COPY tools/gen_cert.sh /usr/local/bin/gen_cert.sh
+RUN chmod +x /usr/local/bin/gen_cert.sh
 
-COPY default /etc/nginx/sites-available/default
+EXPOSE 443
 
-RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/usr/local/bin/gen_cert.sh"]

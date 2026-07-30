@@ -1,10 +1,25 @@
-FROM debian:bookworm
+FROM debian:bookworm-slim
 
-RUN apt update && apt upgrade && apt install -y php8.2-fpm php8.2-mysqli curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    php-fpm \
+    php-mysqli \
+    php-curl \
+    php-gd \
+    php-mbstring \
+    php-xml \
+    php-zip \
+    curl \
+    mariadb-client \
+    wget \
+    tar \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY www.conf /etc/php/8.2/fpm/pool.d/.
-COPY script.sh .
+COPY conf/www.conf /etc/php/*/fpm/pool.d/www.conf
+COPY tools/setup_wp.sh /usr/local/bin/setup_wp.sh
+RUN chmod +x /usr/local/bin/setup_wp.sh
 
-RUN chmod +x script.sh
+WORKDIR /var/www/html
 
-CMD ["./script.sh"]
+EXPOSE 9000
+
+ENTRYPOINT ["/usr/local/bin/setup_wp.sh"]
