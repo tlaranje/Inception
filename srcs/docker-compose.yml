@@ -1,13 +1,71 @@
+version: '3.8'
+
 services:
-  nginx:
-    build: ./requirements/nginx
-    container_name: nginx
-    ports:
-      - "443:443"
+  # ----------------------------------------------------
+  # Servidor de Banco de Dados: MariaDB
+  # ----------------------------------------------------
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/mysql
     networks:
       - inception_network
     restart: always
 
+  # ----------------------------------------------------
+  # Servidor de Aplicação: WordPress + PHP-FPM
+  # ----------------------------------------------------
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    env_file: .env
+    depends_on:
+      - mariadb
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - inception_network
+    restart: always
+
+  # ----------------------------------------------------
+  # Servidor Web / Proxy Inverso: NGINX (HTTPS apenas)
+  # ----------------------------------------------------
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    env_file: .env
+    ports:
+      - "443:443"
+    depends_on:
+      - wordpress
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - inception_network
+    restart: always
+
+# ----------------------------------------------------
+# Volumes Nomeados (Persistência em /home/login/data)
+# ----------------------------------------------------
+volumes:
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/tlaranje/data/mariadb
+  wp_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/tlaranje/data/wordpress
+
+# ----------------------------------------------------
+# Rede Interna (Bridge) entre os Containers
+# ----------------------------------------------------
 networks:
   inception_network:
     driver: bridge
