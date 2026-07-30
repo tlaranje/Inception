@@ -1,14 +1,12 @@
-FROM debian:bookworm-slim
+FROM debian:bullseye
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    nginx \
-    openssl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y nginx openssl && rm -rf /var/lib/apt/lists/*
 
-COPY conf/nginx.conf /etc/nginx/nginx.conf
-COPY tools/gen_cert.sh /usr/local/bin/gen_cert.sh
-RUN chmod +x /usr/local/bin/gen_cert.sh
+COPY conf/nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY tools/setup.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/setup.sh
 
 EXPOSE 443
 
-ENTRYPOINT ["/usr/local/bin/gen_cert.sh"]
+ENTRYPOINT ["/usr/local/bin/setup.sh"]
