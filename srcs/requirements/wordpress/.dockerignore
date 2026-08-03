@@ -1,0 +1,12 @@
+.git
+.gitignore
+
+*.env
+.env
+secrets/
+*.pem
+*.key
+*password*
+
+*.log
+tmp/

@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by <login>.*
+*This project has been created as part of the 42 curriculum by tlaranje.*
 
 # Inception
 
@@ -13,7 +13,7 @@ each in its own container built from a custom Dockerfile:
 - **MariaDB** — the database engine backing WordPress.
 
 Data persistence is handled through two Docker named volumes (database and
-website files), both bind to `/home/<login>/data` on the host. All containers
+website files), both bind to `/home/tlaranje/data` on the host. All containers
 communicate over a dedicated bridge network (`inception`).
 
 ## Instructions
@@ -26,10 +26,10 @@ make re         # full rebuild from scratch
 ```
 
 Before the first `make`, fill in real values in `secrets/*.txt` (see
-`DEV_DOC.md`), and make sure `<login>.42.fr` resolves to your VM's IP
+`DEV_DOC.md`), and make sure `tlaranje.42.fr` resolves to your VM's IP
 (e.g. via `/etc/hosts`).
 
-Visit `https://<login>.42.fr` in your browser once the stack is up.
+Visit `https://tlaranje.42.fr` in your browser once the stack is up.
 
 ## Resources
 
@@ -39,15 +39,9 @@ Visit `https://<login>.42.fr` in your browser once the stack is up.
 - MariaDB documentation: https://mariadb.com/kb/en/documentation/
 - NGINX documentation: https://nginx.org/en/docs/
 
-**AI usage:** AI assistance (Claude) was used to draft the initial project
+**AI usage:** AI assistance was used to draft the initial project
 skeleton (Makefile, docker-compose.yml, Dockerfiles, entrypoint scripts, and
-this documentation structure) based on the subject requirements. Every
-generated file was reviewed and adapted manually — in particular the
-MariaDB/WordPress init scripts, PID 1 / foreground process handling, and the
-secrets wiring were checked against Docker best-practice documentation before
-being considered final. AI was not used to make architectural decisions
-(service split, volume/network design); those follow directly from the
-subject's mandatory requirements.
+this documentation structure) and help with the bash scripts based on the subject requirements.
 
 ## Project description: technical choices
 
@@ -84,11 +78,6 @@ host path convention, and are the recommended way to persist container data.
 Bind mounts tie a container directly to a specific host path with the host's
 raw permissions model, which is more fragile and harder to reason about
 across environments. The subject requires named volumes; here they are
-configured with the `local` driver bound to `/home/<login>/data` via
+configured with the `local` driver bound to `/home/tlaranje/data` via
 `driver_opts`, satisfying both the "named volume" requirement and the "data
 must live at that path" requirement.
-
-## Notes
-
-Replace every occurrence of `<login>` / `login` (Makefile, docker-compose.yml,
-.env, nginx.conf, gen_cert.sh) with your actual 42 login before use.
