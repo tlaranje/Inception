@@ -1,0 +1,15 @@
+- [X] Usar Docker secrets (`/run/secrets/...`) em vez de senhas em texto plano no `.env`
+- [ ] Adicionar `.env` ao `.gitignore` (atualmente só `secrets/` e `data/` estão ignorados)
+- [ ] Referenciar os arquivos em `secrets/` (`credentials.txt`, `db_password.txt`, `db_root_password.txt`) no `docker-compose.yml` via `secrets:`
+- [ ] Criar pasta `srcs/requirements/bonus/` (mencionada na estrutura esperada do PDF)
+- [ ] Confirmar se a imagem base (`debian:bullseye`) é a penúltima versão estável do Debian/Alpine
+- [ ] Adicionar `.dockerignore` em cada serviço (presente na estrutura esperada do PDF, ausente no projeto)
+- [ ] Verificar criação de dois usuários no WordPress (admin + normal) e garantir que o nome do admin não contenha "admin"/"administrator"
+- [ ] Adicionar seção de comparação no README: VM vs Docker, Secrets vs Env Variables, Docker Network vs Host Network, Docker Volumes vs Bind Mounts
+- [ ] Completar seção "Resources" do README com referências e explicação do uso de IA
+- [ ] Corrigir primeira linha do README (login genérico `<login>` em vez do login real)
+- [ ] Confirmar se `USER_DOC.md` cobre: serviços da stack, iniciar/parar, acessar site e painel admin, localizar credenciais, checar status dos serviços
+- [ ] Confirmar se `DEV_DOC.md` cobre: setup do zero, build/launch via Makefile, comandos de gerenciamento de containers/volumes, persistência de dados
+- [ ] Adicionar bonus (Redis, FTP, site estático, Adminer, ou serviço extra) — ainda não implementado
+- [ ] Revisar `restart: always` (usar `unless-stopped` é mais comum, mas `always` também é aceito — validar se atende à regra "reiniciar em caso de crash")
+- [ ] Confirmar volumes NÃO usam bind mount disfarçado (no compose está `driver_opts` com `type: none, o: bind` — isso é bind mount, não named volume puro, o que pode violar a regra)

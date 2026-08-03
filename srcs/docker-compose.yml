@@ -1,12 +1,20 @@
-version: '3.8'
+secrets:
+  db_password:
+    file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_user_password:
+    file: ../secrets/wp_user_password.txt
 
 services:
-  # ----------------------------------------------------
-  # Servidor de Banco de Dados: MariaDB
-  # ----------------------------------------------------
   mariadb:
     build: ./requirements/mariadb
     container_name: mariadb
+    secrets:
+      - db_password
+      - db_root_password
     env_file: .env
     volumes:
       - db_data:/var/lib/mysql
@@ -14,12 +22,13 @@ services:
       - inception_network
     restart: always
 
-  # ----------------------------------------------------
-  # Servidor de Aplicação: WordPress + PHP-FPM
-  # ----------------------------------------------------
   wordpress:
     build: ./requirements/wordpress
     container_name: wordpress
+    secrets:
+      - db_password
+      - wp_admin_password
+      - wp_user_password
     env_file: .env
     depends_on:
       - mariadb
@@ -29,9 +38,6 @@ services:
       - inception_network
     restart: always
 
-  # ----------------------------------------------------
-  # Servidor Web / Proxy Inverso: NGINX (HTTPS apenas)
-  # ----------------------------------------------------
   nginx:
     build: ./requirements/nginx
     container_name: nginx
@@ -46,9 +52,6 @@ services:
       - inception_network
     restart: always
 
-# ----------------------------------------------------
-# Volumes Nomeados (Persistência em /home/login/data)
-# ----------------------------------------------------
 volumes:
   db_data:
     driver: local
@@ -63,9 +66,6 @@ volumes:
       o: bind
       device: /home/tlaranje/data/wordpress
 
-# ----------------------------------------------------
-# Rede Interna (Bridge) entre os Containers
-# ----------------------------------------------------
 networks:
   inception_network:
     driver: bridge
