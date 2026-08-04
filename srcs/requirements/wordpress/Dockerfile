@@ -16,8 +16,9 @@ COPY conf/www.conf /etc/php/8.2/fpm/pool.d/www.conf
 COPY tools/setup.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/setup.sh
 
+COPY theme-overrides/header.php /tmp/header.php
+
 WORKDIR /var/www/html
 
 EXPOSE 9000
-
 ENTRYPOINT ["/usr/local/bin/setup.sh"]
