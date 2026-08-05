@@ -1,29 +1,30 @@
 #!/bin/bash
 set -e
 
+# Create the PHP runtime directory and switch to the web root
 mkdir -p /run/php
 cd /var/www/html
 
+# Read secure passwords from Docker secrets files
 DB_PASSWORD=$(cat /run/secrets/db_password)
 WP_ADMIN_PASSWORD=$(cat /run/secrets/wp_admin_password)
 WP_USER_PASSWORD=$(cat /run/secrets/wp_user_password)
 
-echo "Aguardando o MariaDB inicializar..."
+# Wait until the MariaDB service is fully operational
 until mysqladmin ping -h"mariadb" -u"${MYSQL_USER}" -p"${DB_PASSWORD}" --silent; do
     sleep 2
 done
 
-echo "MariaDB está operacional!"
 
-SITE_PORT="${SITE_PORT:-443}"
 SITE_URL="https://${DOMAIN_NAME}"
 
+# Check if WordPress is not yet installed by looking for the configuration file
 if [ ! -f /var/www/html/wp-config.php ]; then
 
-    echo "Descarregando o WordPress..."
+    # Download core WordPress files
     wp core download --allow-root --path=/var/www/html
 
-    echo "Criando o wp-config.php..."
+    # Generate the wp-config.php file using database credentials
     wp config create \
         --dbname="${MYSQL_DATABASE}" \
         --dbuser="${MYSQL_USER}" \
@@ -32,7 +33,7 @@ if [ ! -f /var/www/html/wp-config.php ]; then
         --path=/var/www/html \
         --allow-root
 
-    echo "Instalando o WordPress..."
+    # Run standard WordPress installation with administrator details
     wp core install \
         --url="${SITE_URL}" \
         --title="${WORDPRESS_TITLE}" \
@@ -43,10 +44,11 @@ if [ ! -f /var/www/html/wp-config.php ]; then
         --path=/var/www/html \
         --allow-root
 
+    # Create directories and copy custom theme patterns for WordPress
     mkdir -p /var/www/html/wp-content/themes/twentytwentyfive/patterns
     cp /tmp/header.php /var/www/html/wp-content/themes/twentytwentyfive/patterns/header.php
 
-    echo "Criando utilizador normal (autor)..."
+    # Create a regular user account with author permissions
     wp user create \
         "${WORDPRESS_USER}" \
         "${WORDPRESS_USER_EMAIL}" \
@@ -54,25 +56,14 @@ if [ ! -f /var/www/html/wp-config.php ]; then
         --role=author \
         --path=/var/www/html \
         --allow-root
-
-    echo "Adicionando link de login à página inicial..."
-    HOME_ID=$(wp option get page_on_front --path=/var/www/html --allow-root)
-    if [ -z "$HOME_ID" ] || [ "$HOME_ID" = "0" ]; then
-        HOME_ID=$(wp post list --post_type=post --posts_per_page=1 --field=ID --path=/var/www/html --allow-root)
-    fi
-    CURRENT_CONTENT=$(wp post get "$HOME_ID" --field=post_content --path=/var/www/html --allow-root)
-    wp post update "$HOME_ID" \
-        --post_content="${CURRENT_CONTENT}<p><a href=\"${SITE_URL}/wp-login.php\">Login</a></p>" \
-        --path=/var/www/html \
-        --allow-root
-
-    echo "WordPress instalado e configurado com sucesso!"
 fi
 
-echo "Sincronizando siteurl/home com a porta atual (${SITE_PORT})..."
+# Update core site URLs to ensure consistency
 wp option update siteurl "${SITE_URL}" --path=/var/www/html --allow-root
 wp option update home "${SITE_URL}" --path=/var/www/html --allow-root
 
+# Set correct ownership permissions for the web server
 chown -R www-data:www-data /var/www/html
 
+# Start the PHP-FPM service in the foreground as the container's main process
 exec php-fpm8.2 -F
