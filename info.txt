@@ -1,0 +1,44 @@
+Docker & Docker Compose: Docker builds isolated containers from images, 
+packaging an app with its dependencies. Docker Compose orchestrates 
+multiple containers (defined in a docker-compose.yml) so they run together 
+as one coordinated service.
+
+Image with/without Compose: The image itself is the same either way, 
+but without Compose you run/configure each container manually via docker 
+run and flags. With Compose, configuration (networking, volumes, env vars, 
+dependencies) is declared in a file and applied automatically.
+
+Docker vs VMs: Containers share the host's kernel, making them much 
+lighter and faster to start than VMs. VMs virtualize full hardware with their 
+own OS, using far more resources.
+
+Directory structure: An organized structure (e.g. separate folders per service, 
+each with its own Dockerfile) keeps the project clear and helps Compose find 
+build contexts correctly. Following it also makes grading/review easier, 
+since it matches the expected format in the subject's PDF.
+
+- Docker network
+A Docker network is an isolated virtual network created by Docker, where 
+containers can communicate with each other using the service name as a 
+hostname — without needing to expose ports externally or know each other's IPs.
+---
+
+- http
+curl -v http://tlaranje.42.fr
+
+
+- SSL/TLS certificate
+curl -kvI https://login.42.fr 2>&1 | grep -i "SSL\|TLS"
+
+curl -kv --tlsv1.2 --tls-max 1.2 https://tlaranje.42.fr -o /dev/null
+
+curl -kv --tlsv1.1 --tls-max 1.1 https://tlaranje.42.fr -o /dev/null
+
+docker exec -it nginx cat /etc/nginx/conf.d/default.conf | grep ssl_pro
+tocols
+
+- Volumes
+docker volume inspect $(docker volume ls -q) | grep -i "device\|mountpoint\|/home/tlaranje/data"
+
+- MariaDB
+docker exec -it mariadb mysql -u root -p$(cat secrets/db_root_password.txt) -e "USE wordpress; SHOW TABLES; SELECT user_login FROM wp_users;"
